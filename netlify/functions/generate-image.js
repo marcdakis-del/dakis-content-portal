@@ -42,20 +42,15 @@ exports.handler = async function (event) {
       return { statusCode: 500, body: JSON.stringify({ error: `Submit failed (${submitRes.status}): ${submitData.detail || submitData.message || submitText.substring(0, 200)}` }) };
     }
 
-    // Return request_id immediately — browser will poll for result
-    const requestId = submitData.request_id;
-    if (!requestId) {
-      // Sometimes result comes back immediately
-      if (submitData.images?.[0]?.url) {
-        return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageUrl: submitData.images[0].url }) };
-      }
-      return { statusCode: 500, body: JSON.stringify({ error: `No request_id returned: ${submitText.substring(0, 200)}` }) };
-    }
-
+    // Return requestId AND the status/response URLs provided by fal
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ requestId })
+      body: JSON.stringify({
+        requestId: submitData.request_id,
+        statusUrl: submitData.status_url,
+        responseUrl: submitData.response_url
+      })
     };
 
   } catch(e) {
