@@ -134,6 +134,24 @@
       <img id="preview-img" style="display:none"/>
     </div>
     <p class="upload-change" id="change-photo" style="display:none" onclick="document.getElementById('photo-input').click()">Tap to change photo</p>
+
+    <div class="section-gap">
+      <p class="card-label" style="margin-bottom:0.75rem">Ad scene</p>
+      <div class="field" style="margin-bottom:10px">
+        <label for="ad-location">Background / location</label>
+        <input type="text" id="ad-location" placeholder="e.g. Edinburgh city centre, coffee shop, gym, beach"/>
+      </div>
+      <div class="field">
+        <label for="ad-style">Shot style</label>
+        <select id="ad-style">
+          <option value="product held in hand, lifestyle">Product held in hand</option>
+          <option value="flat lay product on marble surface">Flat lay on surface</option>
+          <option value="product placed on table in environment">On table in environment</option>
+          <option value="close up macro product shot">Close-up macro shot</option>
+          <option value="person using product in environment">Person using product</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -349,7 +367,14 @@
       const submitRes = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: photoBase64, businessName: name, businessType: type })
+        body: JSON.stringify({
+          imageBase64: photoBase64,
+          businessName: name,
+          businessType: type,
+          promotion: document.getElementById('promo').value.trim(),
+          adStyle: document.getElementById('ad-style').value,
+          adLocation: document.getElementById('ad-location').value.trim() || 'Edinburgh city centre'
+        })
       });
       const submitData = await submitRes.json();
 
@@ -466,3 +491,4 @@
 </script>
 </body>
 </html>
+
