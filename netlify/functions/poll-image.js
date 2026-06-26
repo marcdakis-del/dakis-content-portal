@@ -14,42 +14,54 @@ exports.handler = async function (event) {
   if (!requestId) return { statusCode: 400, body: JSON.stringify({ error: "Missing requestId" }) };
 
   try {
-    // Check status
-    const statusRes = await fetch(`https://queue.fal.run/fal-ai/flux/dev/image-to-image/requests/${requestId}/status`, {
+    // Try fetching the result directly â€” returns the image if done, or status if not
+    const resultRes = await fetch(`https://queue.fal.run/fal-ai/flux/dev/image-to-image/requests/${requestId}`, {
       headers: { "Authorization": `Key ${FAL_KEY}` }
     });
 
-    const statusText = await statusRes.text();
-    let statusData;
-    try { statusData = JSON.parse(statusText); }
-    catch(e) { return { statusCode: 500, body: JSON.stringify({ error: `Status parse error: ${statusText.substring(0, 200)}` }) }; }
+    const resultText = await resultRes.text();
 
-    // Still in queue or processing
-    if (statusData.status === "IN_QUEUE" || statusData.status === "IN_PROGRESS") {
+    if (!resultText || resultText.trim() === '') {
+      // Empty response means still processing
       return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "pending" }) };
     }
 
-    // Failed
-    if (statusData.status === "FAILED") {
-      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "failed", error: "Generation failed on fal.ai" }) };
+    let resultData;
+    try { resultData = JSON.parse(resultText); }
+    catch(e) {
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "pending" }) };
     }
 
-    // Completed — fetch the actual result
-    if (statusData.status === "COMPLETED") {
-      const resultRes = await fetch(`https://queue.fal.run/fal-ai/flux/dev/image-to-image/requests/${requestId}`, {
-        headers: { "Authorization": `Key ${FAL_KEY}` }
-      });
-      const resultData = await resultRes.json();
-      const imageUrl = resultData.images?.[0]?.url;
+    // Has image â€” done
+    if (resultData.images?.[0]?.url) {
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "done", imageUrl: resultData.images[0].url }) };
+    }
 
-      if (imageUrl) {
-        return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "done", imageUrl }) };
+    // Check status field
+    const status = resultData.status;
+    if (status === "COMPLETED") {
+      // Result should be in response_url
+      const responseUrl = resultData.response_url;
+      if (responseUrl) {
+        const imgRes = await fetch(responseUrl, { headers: { "Authorization": `Key ${FAL_KEY}` } });
+        const imgData = await imgRes.json();
+        const imageUrl = imgData.images?.[0]?.url;
+        if (imageUrl) {
+          return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "done", imageUrl }) };
+        }
       }
-      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "failed", error: "No image in result" }) };
     }
 
-    // Unknown status — still pending
-    return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "pending" }) };
+    if (status === "FAILED") {
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "failed", error: "Generation failed" }) };
+    }
+
+    if (status === "IN_QUEUE" || status === "IN_PROGRESS") {
+      return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "pending" }) };
+    }
+
+    // Return full response for debugging
+    return { statusCode: 200, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "pending", debug: resultText.substring(0, 300) }) };
 
   } catch(e) {
     return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
