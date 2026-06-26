@@ -14,21 +14,24 @@ exports.handler = async function (event) {
   if (!requestId) return { statusCode: 400, body: JSON.stringify({ error: "Missing requestId" }) };
 
   try {
-    const resultRes = await fetch(`https://queue.fal.run/fal-ai/flux/dev/image-to-image/requests/${requestId}`, {
-      headers: { "Authorization": `Key ${FAL_KEY}` }
-    });
+    // Try all three possible endpoint formats and return debug info
+    const urls = [
+      `https://queue.fal.run/fal-ai/flux/dev/image-to-image/requests/${requestId}/response`,
+      `https://queue.fal.run/fal-ai/flux/dev/image-to-image/requests/${requestId}/status`,
+      `https://fal.run/fal-ai/flux/dev/image-to-image/requests/${requestId}`,
+    ];
 
-    const resultText = await resultRes.text();
+    const results = [];
+    for (const url of urls) {
+      const res = await fetch(url, { headers: { "Authorization": `Key ${FAL_KEY}` } });
+      const text = await res.text();
+      results.push({ url: url.split('/requests/')[1], status: res.status, body: text.substring(0, 200) });
+    }
 
-    // Return everything so we can see exactly what fal.ai sends back
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: "debug",
-        httpStatus: resultRes.status,
-        responseText: resultText.substring(0, 500)
-      })
+      body: JSON.stringify({ debug: results })
     };
 
   } catch(e) {
