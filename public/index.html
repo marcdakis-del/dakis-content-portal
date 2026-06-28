@@ -103,6 +103,45 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   footer { text-align: center; margin-top: 3rem; font-size: 12px; color: var(--hint); }
   footer a { color: var(--accent); text-decoration: none; }
+  /* TABS */
+  .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .tab-btn { flex: 1; padding: 10px 8px; background: var(--bg); border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; border-right: 1px solid var(--border); }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active { background: var(--surface); color: var(--text); }
+  .tab-btn svg { display: block; margin: 0 auto 4px; width: 16px; height: 16px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* CLIPS TAB */
+  .video-upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 2rem; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg); position: relative; }
+  .video-upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .video-upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .video-upload-zone svg { display: block; margin: 0 auto 8px; opacity: 0.4; }
+  .video-upload-zone p { font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+  .video-upload-zone span { font-size: 11px; color: var(--hint); }
+  .video-preview-wrap { margin-top: 1rem; }
+  .video-preview-wrap video { width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); display: block; max-height: 280px; }
+  .clips-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 10px; }
+  .clip-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+  .clip-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .clip-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .clip-remove { background: none; border: none; cursor: pointer; color: var(--hint); font-size: 18px; line-height: 1; padding: 0; }
+  .clip-remove:hover { color: #c0392b; }
+  .clip-times { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .clip-time-field { display: flex; flex-direction: column; gap: 4px; }
+  .clip-time-field label { font-size: 11px; color: var(--muted); }
+  .clip-time-field input { font-family: 'Inter', sans-serif; font-size: 14px; padding: 7px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); width: 100%; outline: none; }
+  .clip-time-field input:focus { border-color: var(--accent); }
+  .clip-preview-btn { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 0; }
+  .add-clip-btn { width: 100%; padding: 9px; border: 1px dashed var(--border); border-radius: var(--radius-sm); background: none; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; transition: all 0.15s; }
+  .add-clip-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .clips-output { margin-top: 1rem; }
+  .clip-result { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .clip-result-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .clip-result-status { font-size: 11px; color: var(--muted); }
+  .clip-result-status.done { color: var(--success-text); }
+  .clip-result-status.failed { color: #c0392b; }
+
   @media (max-width: 480px) {
     .row { grid-template-columns: 1fr; }
     .type-grid { grid-template-columns: repeat(2, 1fr); }
@@ -119,8 +158,21 @@
       <span class="wordmark-text">Dakis <span>Studio</span></span>
     </div>
     <h1>Content portal</h1>
-    <p>Upload a photo, fill in your details â€” get a caption and a professional ad image ready to post.</p>
+    <p>Your social media content suite â€” captions, ad images, and video clips.</p>
   </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('content', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg>
+      Content
+    </button>
+    <button class="tab-btn" onclick="switchTab('clips', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Clips
+    </button>
+  </div>
+
+  <div class="tab-pane active" id="tab-content">
 
   <div class="card">
     <p class="card-label">Your photo</p>
@@ -266,6 +318,45 @@
     </div>
   </div>
 
+  </div><!-- end tab-content -->
+
+  <div class="tab-pane" id="tab-clips">
+
+    <div class="card">
+      <p class="card-label">Upload your video</p>
+      <div class="video-upload-zone" id="video-upload-zone" onclick="document.getElementById('video-input').click()">
+        <input type="file" id="video-input" accept="video/mp4,video/quicktime,video/mov" onchange="handleVideo(event)"/>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <p>Tap to upload a video</p>
+        <span>MP4 or MOV â€” training session, behind the scenes, demo</span>
+      </div>
+      <div class="video-preview-wrap" id="video-preview-wrap" style="display:none">
+        <video id="video-preview" controls playsinline></video>
+        <p style="font-size:11px;color:var(--hint);margin-top:6px;text-align:center" id="video-duration-label"></p>
+      </div>
+    </div>
+
+    <div class="card" id="clips-card" style="display:none">
+      <p class="card-label">Your clips</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Set the start and end time for each clip. Each will be exported as a vertical 9:16 reel.</p>
+
+      <div class="clips-list" id="clips-list"></div>
+
+      <button class="add-clip-btn" id="add-clip-btn" onclick="addClip()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add another clip
+      </button>
+
+      <button class="generate-btn" id="render-btn" onclick="renderClips()" style="margin-top:1rem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Render clips
+      </button>
+    </div>
+
+    <div id="clips-output" class="clips-output"></div>
+
+  </div><!-- end tab-clips -->
+
   <footer>
     <p>Powered by <a href="https://dakisstudio.com" target="_blank">Dakis Studio</a> &amp; AI</p>
   </footer>
@@ -330,6 +421,198 @@
     const el = document.getElementById('errmsg');
     el.textContent = msg; el.classList.add('visible');
     setTimeout(() => el.classList.remove('visible'), 6000);
+  }
+
+  // TAB SWITCHING
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // VIDEO CLIPS
+  let videoDuration = 0;
+  let videoBase64 = '';
+  let videoFileName = '';
+  let clipCount = 0;
+  let renderIdsStore = [];
+
+  function handleVideo(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    videoFileName = file.name;
+    const url = URL.createObjectURL(file);
+    const video = document.getElementById('video-preview');
+    video.src = url;
+    document.getElementById('video-preview-wrap').style.display = 'block';
+    video.onloadedmetadata = function() {
+      videoDuration = video.duration;
+      const mins = Math.floor(videoDuration / 60);
+      const secs = Math.floor(videoDuration % 60);
+      document.getElementById('video-duration-label').textContent = `Duration: ${mins}:${secs.toString().padStart(2,'0')}`;
+      document.getElementById('clips-card').style.display = 'block';
+      if (document.getElementById('clips-list').children.length === 0) addClip();
+    };
+    // Read as base64 for upload
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      videoBase64 = ev.target.result.split(',')[1];
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function formatTime(secs) {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return m + ':' + s.toString().padStart(2,'0');
+  }
+
+  function parseTime(str) {
+    const parts = str.split(':');
+    if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+    return parseFloat(str);
+  }
+
+  function addClip() {
+    if (clipCount >= 5) return;
+    clipCount++;
+    const list = document.getElementById('clips-list');
+    const defaultStart = 0;
+    const defaultEnd = Math.min(30, videoDuration);
+    const div = document.createElement('div');
+    div.className = 'clip-item';
+    div.id = 'clip-' + clipCount;
+    div.innerHTML = `
+      <div class="clip-item-header">
+        <span class="clip-label">Clip ${clipCount}</span>
+        <button class="clip-remove" onclick="removeClip(${clipCount})" title="Remove clip">Ã—</button>
+      </div>
+      <div class="clip-times">
+        <div class="clip-time-field">
+          <label>Start time (m:ss)</label>
+          <input type="text" id="start-${clipCount}" value="${formatTime(defaultStart)}" placeholder="0:00"/>
+        </div>
+        <div class="clip-time-field">
+          <label>End time (m:ss)</label>
+          <input type="text" id="end-${clipCount}" value="${formatTime(defaultEnd)}" placeholder="0:30"/>
+        </div>
+      </div>
+      <button class="clip-preview-btn" onclick="previewClip(${clipCount})">â–¶ Preview this section</button>
+    `;
+    list.appendChild(div);
+    if (clipCount >= 5) document.getElementById('add-clip-btn').style.display = 'none';
+  }
+
+  function removeClip(id) {
+    const el = document.getElementById('clip-' + id);
+    if (el) el.remove();
+    document.getElementById('add-clip-btn').style.display = 'flex';
+  }
+
+  function previewClip(id) {
+    const start = parseTime(document.getElementById('start-' + id).value);
+    const video = document.getElementById('video-preview');
+    video.currentTime = start;
+    video.play();
+  }
+
+  async function renderClips() {
+    if (!videoBase64) { showError('Please upload a video first.'); return; }
+
+    const clipItems = document.querySelectorAll('.clip-item');
+    const clips = [];
+    for (const item of clipItems) {
+      const id = item.id.split('-')[1];
+      const start = parseTime(document.getElementById('start-' + id).value);
+      const end = parseTime(document.getElementById('end-' + id).value);
+      if (end <= start) { showError('End time must be after start time for all clips.'); return; }
+      if (end - start < 1) { showError('Clips must be at least 1 second long.'); return; }
+      clips.push({ start, end, label: 'Clip ' + id });
+    }
+
+    if (!clips.length) { showError('Add at least one clip first.'); return; }
+
+    const btn = document.getElementById('render-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Uploading video...';
+
+    const output = document.getElementById('clips-output');
+    output.innerHTML = '<div class="card"><p style="font-size:13px;color:var(--muted)">Uploading your video...</p></div>';
+
+    try {
+      // Step 1: Upload video
+      const uploadRes = await fetch('/api/upload-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoBase64, fileName: videoFileName })
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || uploadData.error) {
+        output.innerHTML = `<div class="card"><p style="color:#c0392b;font-size:13px">Upload failed â€” ${uploadData.error}</p></div>`;
+        return;
+      }
+
+      btn.innerHTML = '<div class="spinner"></div> Creating clips...';
+      output.innerHTML = '<div class="card"><p style="font-size:13px;color:var(--muted)">Rendering your clips â€” this takes about 1-2 minutes...</p></div>';
+
+      // Step 2: Create clip renders
+      const createRes = await fetch('/api/create-clips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl: uploadData.videoUrl, clips })
+      });
+      const createData = await createRes.json();
+      if (!createRes.ok || createData.error) {
+        output.innerHTML = `<div class="card"><p style="color:#c0392b;font-size:13px">Render failed â€” ${createData.error}</p></div>`;
+        return;
+      }
+
+      renderIdsStore = createData.renderIds;
+
+      // Step 3: Poll for results
+      output.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--muted)">Rendering ${clips.length} clip${clips.length > 1 ? 's' : ''}...<br><span style="font-size:11px;color:var(--hint)">Usually takes 1-2 minutes</span></p></div>`;
+
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 4000));
+        const pollRes = await fetch('/api/poll-clips', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ renderIds: renderIdsStore })
+        });
+        const pollData = await pollRes.json();
+
+        // Update UI with current status
+        let html = '';
+        for (const result of pollData.results) {
+          if (result.status === 'done' && result.url) {
+            html += `<div class="clip-result">
+              <div>
+                <p class="clip-result-label">${result.label}</p>
+                <p class="clip-result-status done">Ready</p>
+              </div>
+              <a class="action-btn" href="${result.url}" download target="_blank">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download
+              </a>
+            </div>`;
+          } else if (result.status === 'failed') {
+            html += `<div class="clip-result"><div><p class="clip-result-label">${result.label}</p><p class="clip-result-status failed">Failed</p></div></div>`;
+          } else {
+            html += `<div class="clip-result"><div><p class="clip-result-label">${result.label}</p><p class="clip-result-status">Rendering...</p></div></div>`;
+          }
+        }
+        output.innerHTML = `<div class="card"><p class="card-label" style="margin-bottom:1rem">Your clips</p>${html}</div>`;
+
+        if (pollData.allDone) break;
+      }
+
+    } catch(e) {
+      output.innerHTML = `<div class="card"><p style="color:#c0392b;font-size:13px">Error: ${e.message}</p></div>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Render clips';
+    }
   }
 
   function copyText() {
@@ -491,4 +774,3 @@
 </script>
 </body>
 </html>
-
