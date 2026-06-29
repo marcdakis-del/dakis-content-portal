@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard — Dakis Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar:#0f1117;
+  --sidebar-border:#1e2130;
+  --sidebar-text:#8b92a5;
+  --sidebar-active:#ffffff;
+  --bg:#f8f7f4;
+  --surface:#ffffff;
+  --border:#e4e2dc;
+  --text:#1a1a18;
+  --muted:#6b6960;
+  --hint:#a8a49b;
+  --accent:#d4621a;
+  --accent-light:#fdf0e8;
+  --success:#2d6a30;
+  --success-bg:#edf6ec;
+  --warning:#92620a;
+  --warning-bg:#fef8ec;
+  --radius:10px;
+  --radius-sm:6px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+.sidebar-logo{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid var(--sidebar-border)}
+.logo-mark{display:flex;align-items:center;gap:8px}
+.logo-dot{width:24px;height:24px;background:var(--accent);border-radius:50%;position:relative}
+.logo-dot::after{content:'';position:absolute;inset:3px;border-radius:50%;background:rgba(255,255,255,0.2)}
+.logo-text{font-size:14px;font-weight:600;color:#fff;letter-spacing:-0.01em}
+.logo-text span{color:var(--accent)}
+.client-switcher{margin:1rem 1rem 0;background:var(--sidebar-border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.client-name{font-size:12px;font-weight:500;color:#fff}
+.client-type{font-size:10px;color:var(--sidebar-text);margin-top:1px}
+.switcher-arrow{color:var(--sidebar-text);font-size:10px}
+.sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto}
+.nav-section{margin-bottom:1.5rem}
+.nav-section-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--sidebar-text);padding:0 1.25rem;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 1.25rem;font-size:13px;font-weight:500;color:var(--sidebar-text);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,0.05)}
+.nav-item.active{color:#fff;border-left-color:var(--accent);background:rgba(212,98,26,0.1)}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px}
+.nav-badge.grey{background:var(--sidebar-border);color:var(--sidebar-text)}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid var(--sidebar-border)}
+.pulse-row{display:flex;align-items:center;gap:8px}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.pulse-text{font-size:11px;color:var(--sidebar-text)}
+.pulse-text span{color:#22c55e}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-btn{padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;text-decoration:none}
+.topbar-btn:hover{border-color:var(--accent);color:var(--accent)}
+.topbar-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.topbar-btn.primary:hover{opacity:0.9}
+.content{padding:2rem;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* OVERVIEW PAGE */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--hint);margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:600;color:var(--text);letter-spacing:-0.02em;line-height:1}
+.stat-change{font-size:12px;color:var(--muted);margin-top:4px}
+.stat-change.up{color:var(--success)}
+.stat-change.down{color:#c0392b}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.card-title{font-size:13px;font-weight:600;color:var(--text)}
+.card-action{font-size:12px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif}
+.activity-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none;padding-bottom:0}
+.activity-icon{width:30px;height:30px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.activity-icon.orange{background:var(--accent-light)}
+.activity-icon.green{background:var(--success-bg)}
+.activity-icon.blue{background:#eef2ff}
+.activity-text{font-size:13px;color:var(--text);line-height:1.4}
+.activity-time{font-size:11px;color:var(--hint);margin-top:2px}
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quick-action{padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;background:var(--bg);display:flex;align-items:center;gap:10px}
+.quick-action:hover{border-color:var(--accent);background:var(--accent-light)}
+.quick-action svg{width:16px;height:16px;color:var(--accent);flex-shrink:0}
+.quick-action-text{font-size:12px;font-weight:500;color:var(--text)}
+.quick-action-sub{font-size:11px;color:var(--muted)}
+
+/* COMING SOON BADGE */
+.coming-soon{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--warning-bg);color:var(--warning);letter-spacing:0.03em}
+
+/* CONTENT PAGE */
+.content-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1.5rem;width:fit-content}
+.content-tab{padding:8px 16px;background:var(--bg);border:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.15s;border-right:1px solid var(--border)}
+.content-tab:last-child{border-right:none}
+.content-tab.active{background:var(--surface);color:var(--text)}
+.post-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.post-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.post-image{width:100%;aspect-ratio:1;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:32px}
+.post-body{padding:12px}
+.post-platform{font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--hint);margin-bottom:4px}
+.post-text{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.post-date{font-size:11px;color:var(--hint);margin-top:8px}
+
+/* CLIPS PAGE */
+.clip-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.clip-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.clip-thumb{width:100%;aspect-ratio:9/16;background:linear-gradient(135deg,#1a1a18,#2a2a28);display:flex;align-items:center;justify-content:center;max-height:200px}
+.clip-thumb svg{opacity:0.3}
+.clip-info{padding:12px}
+.clip-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.clip-meta{font-size:11px;color:var(--hint)}
+.clip-actions{display:flex;gap:6px;margin-top:10px}
+.clip-btn{padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-family:'Inter',sans-serif;font-size:11px;color:var(--muted);cursor:pointer}
+.clip-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* BOOKINGS PAGE */
+.booking-list{display:flex;flex-direction:column;gap:8px}
+.booking-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;gap:16px}
+.booking-time{font-size:13px;font-weight:600;color:var(--text);min-width:80px}
+.booking-client{flex:1}
+.booking-client-name{font-size:13px;font-weight:500;color:var(--text)}
+.booking-client-service{font-size:11px;color:var(--muted)}
+.booking-status{font-size:11px;font-weight:500;padding:3px 8px;border-radius:10px}
+.booking-status.confirmed{background:var(--success-bg);color:var(--success)}
+.booking-status.pending{background:var(--warning-bg);color:var(--warning)}
+.booking-status.cancelled{background:#fdf0ee;color:#c0392b}
+.day-label{font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--hint);margin:1rem 0 8px}
+
+/* REVIEWS PAGE */
+.review-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem}
+.review-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.review-author{font-size:13px;font-weight:600;color:var(--text)}
+.review-date{font-size:11px;color:var(--hint)}
+.stars{color:#f59e0b;font-size:14px;margin-bottom:8px}
+.review-text{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.review-reply{background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.6;border-left:2px solid var(--accent)}
+.review-reply-label{font-size:10px;font-weight:600;color:var(--accent);margin-bottom:4px;letter-spacing:0.04em;text-transform:uppercase}
+.review-actions{display:flex;gap:8px;margin-top:10px}
+
+/* EMAILS PAGE */
+.email-sequence{display:flex;flex-direction:column;gap:0}
+.email-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);position:relative}
+.email-step:last-child{border-bottom:none}
+.step-line{display:flex;flex-direction:column;align-items:center;gap:0}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-connector{width:1px;background:var(--border);flex:1;margin:4px 0;min-height:20px}
+.email-step:last-child .step-connector{display:none}
+.step-body{flex:1}
+.step-delay{font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--hint);margin-bottom:4px}
+.step-subject{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.step-preview{font-size:12px;color:var(--muted)}
+.step-status{font-size:11px;padding:2px 8px;border-radius:10px;margin-top:6px;display:inline-block}
+.step-status.active{background:var(--success-bg);color:var(--success)}
+.step-status.draft{background:var(--bg);color:var(--hint);border:1px solid var(--border)}
+
+/* WHATSAPP PAGE */
+.wa-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.wa-automation{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.wa-automation:last-child{border-bottom:none}
+.wa-auto-info{flex:1}
+.wa-auto-name{font-size:13px;font-weight:500;color:var(--text)}
+.wa-auto-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.toggle{width:36px;height:20px;background:var(--border);border-radius:10px;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.2s}
+.toggle.on::after{left:19px}
+
+/* SETTINGS PAGE */
+.settings-section{margin-bottom:2rem}
+.settings-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--hint);margin-bottom:1rem}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-label{font-size:13px;font-weight:500;color:var(--text)}
+.settings-row-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.settings-input{font-family:'Inter',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);width:220px;outline:none}
+.settings-input:focus{border-color:var(--accent)}
+.connect-btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;background:var(--surface);transition:all 0.15s}
+.connect-btn:hover{border-color:var(--accent);color:var(--accent)}
+.connect-btn.connected{background:var(--success-bg);color:var(--success);border-color:transparent}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .post-grid{grid-template-columns:1fr 1fr}
+}
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f3; --surface: #ffffff; --border: #e4e2dc; --border-strong: #ccc9bf;
+    --text: #1a1a18; --muted: #6b6960; --hint: #a8a49b;
+    --accent: #d4621a; --accent-light: #fdf0e8;
+    --success-bg: #edf6ec; --success-text: #2d6a30;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem 4rem; }
+  .container { max-width: 560px; margin: 0 auto; }
+  header { margin-bottom: 2.5rem; }
+  .wordmark { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+  .wordmark-dot { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; }
+  .wordmark-text { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .wordmark-text span { color: var(--accent); }
+  header h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 6px; }
+  header p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+  .card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--hint); margin-bottom: 1rem; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  input[type="text"], select, textarea {
+    font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 9px 12px; width: 100%; outline: none; transition: border-color 0.15s; -webkit-appearance: none;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; }
+  textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+  .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .type-btn {
+    padding: 10px 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    color: var(--muted); cursor: pointer; text-align: center; transition: all 0.15s; line-height: 1.3;
+  }
+  .type-btn svg { display: block; margin: 0 auto 5px; width: 18px; height: 18px; }
+  .type-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .type-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+  .tone-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tone-pill {
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 20px;
+    background: var(--bg); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    color: var(--muted); cursor: pointer; transition: all 0.15s;
+  }
+  .tone-pill:hover { border-color: var(--border-strong); color: var(--text); }
+  .tone-pill.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+  .section-gap { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+  .generate-btn {
+    width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 1.25rem; transition: opacity 0.15s, transform 0.1s; letter-spacing: -0.01em;
+  }
+  .generate-btn:hover { opacity: 0.92; }
+  .generate-btn:active { transform: scale(0.99); }
+  .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 1.5rem;
+    text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg); position: relative;
+  }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone.has-image { border-style: solid; border-color: var(--accent); padding: 0; overflow: hidden; }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-zone img { width: 100%; max-height: 220px; object-fit: cover; display: block; border-radius: var(--radius-sm); }
+  .upload-placeholder svg { display: block; margin: 0 auto 8px; opacity: 0.4; }
+  .upload-placeholder p { font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+  .upload-placeholder span { font-size: 11px; color: var(--hint); }
+  .upload-change { font-size: 11px; color: var(--accent); text-align: center; margin-top: 6px; cursor: pointer; }
+  .output-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-top: 1rem; display: none; }
+  .output-card.visible { display: block; }
+  .output-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--success-bg); color: var(--success-text); margin-bottom: 10px; }
+  .output-meta { font-size: 12px; color: var(--hint); margin-bottom: 12px; }
+  .output-text { font-size: 14px; line-height: 1.7; color: var(--text); white-space: pre-wrap; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 12px; }
+  .output-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .action-btn {
+    padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s;
+  }
+  .action-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .image-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+  .image-section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--hint); margin-bottom: 10px; }
+  .ad-image { width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); display: block; }
+  .generating-placeholder {
+    width: 100%; aspect-ratio: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+  }
+  .generating-placeholder p { font-size: 13px; color: var(--muted); }
+  .generating-placeholder span { font-size: 11px; color: var(--hint); }
+  .error-msg { font-size: 13px; color: #c0392b; padding: 10px 14px; background: #fdf0ee; border: 1px solid #f5c6c0; border-radius: var(--radius-sm); margin-top: 1rem; display: none; }
+  .error-msg.visible { display: block; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .spinner-dark { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  footer { text-align: center; margin-top: 3rem; font-size: 12px; color: var(--hint); }
+  footer a { color: var(--accent); text-decoration: none; }
+  /* TABS */
+  .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .tab-btn { flex: 1; padding: 10px 8px; background: var(--bg); border: none; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; border-right: 1px solid var(--border); }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active { background: var(--surface); color: var(--text); }
+  .tab-btn svg { display: block; margin: 0 auto 4px; width: 16px; height: 16px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* CLIPS TAB */
+  .video-upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 2rem; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg); position: relative; }
+  .video-upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .video-upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .video-upload-zone svg { display: block; margin: 0 auto 8px; opacity: 0.4; }
+  .video-upload-zone p { font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+  .video-upload-zone span { font-size: 11px; color: var(--hint); }
+  .video-preview-wrap { margin-top: 1rem; }
+  .video-preview-wrap video { width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); display: block; max-height: 280px; }
+  .clips-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 10px; }
+  .clip-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+  .clip-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .clip-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .clip-remove { background: none; border: none; cursor: pointer; color: var(--hint); font-size: 18px; line-height: 1; padding: 0; }
+  .clip-remove:hover { color: #c0392b; }
+  .clip-times { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .clip-time-field { display: flex; flex-direction: column; gap: 4px; }
+  .clip-time-field label { font-size: 11px; color: var(--muted); }
+  .clip-time-field input { font-family: 'Inter', sans-serif; font-size: 14px; padding: 7px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); width: 100%; outline: none; }
+  .clip-time-field input:focus { border-color: var(--accent); }
+  .clip-preview-btn { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 0; }
+  .add-clip-btn { width: 100%; padding: 9px; border: 1px dashed var(--border); border-radius: var(--radius-sm); background: none; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; transition: all 0.15s; }
+  .add-clip-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .clips-output { margin-top: 1rem; }
+  .clip-result { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .clip-result-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .clip-result-status { font-size: 11px; color: var(--muted); }
+  .clip-result-status.done { color: var(--success-text); }
+  .clip-result-status.failed { color: #c0392b; }
+
+  @media (max-width: 480px) {
+    .row { grid-template-columns: 1fr; }
+    .type-grid { grid-template-columns: repeat(2, 1fr); }
+    header h1 { font-size: 22px; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-dot"></div>
+      <span class="logo-text">Dakis <span>Studio</span></span>
+    </div>
+  </div>
+
+  <div class="client-switcher" onclick="alert('Client switcher — coming soon')">
+    <div>
+      <div class="client-name">Iron & Movement PT</div>
+      <div class="client-type">Personal Trainer · Edinburgh</div>
+    </div>
+    <span class="switcher-arrow">⌄</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-label">Overview</div>
+      <a class="nav-item active" onclick="showPage('overview',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Social Media</div>
+      <a class="nav-item" onclick="showPage('content',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/></svg>
+        Content
+        <span class="nav-badge">3</span>
+      </a>
+      <a class="nav-item" onclick="showPage('clips',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Clips
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Client Management</div>
+      <a class="nav-item" onclick="showPage('bookings',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Bookings
+        <span class="nav-badge grey">Soon</span>
+      </a>
+      <a class="nav-item" onclick="showPage('reviews',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Reviews
+        <span class="nav-badge">2</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Automations</div>
+      <a class="nav-item" onclick="showPage('emails',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Email sequences
+        <span class="nav-badge grey">Soon</span>
+      </a>
+      <a class="nav-item" onclick="showPage('whatsapp',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        WhatsApp & SMS
+        <span class="nav-badge grey">Soon</span>
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" onclick="showPage('settings',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        Settings
+      </a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="pulse-row">
+      <div class="pulse-dot"></div>
+      <span class="pulse-text"><span>3 automations</span> running</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="page-title">Dashboard</span>
+    <div class="topbar-right">
+
+      <button class="topbar-btn primary" onclick="alert('Add client — coming soon')">+ Add client</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW PAGE -->
+    <div class="page active" id="page-overview">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Posts this month</div>
+          <div class="stat-value">14</div>
+          <div class="stat-change up">↑ 4 vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Clips created</div>
+          <div class="stat-value">7</div>
+          <div class="stat-change up">↑ 7 vs last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Reviews replied</div>
+          <div class="stat-value">5</div>
+          <div class="stat-change">2 pending reply</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Emails sent</div>
+          <div class="stat-value">—</div>
+          <div class="stat-change"><span class="coming-soon">Coming soon</span></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent activity</span>
+            <button class="card-action">View all</button>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon orange">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div>
+              <div class="activity-text">Instagram caption generated for Monday promotion</div>
+              <div class="activity-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon orange">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div>
+              <div class="activity-text">Ad image created — kettlebell session</div>
+              <div class="activity-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon green">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div class="activity-text">5-star review replied — Sarah M.</div>
+              <div class="activity-time">Yesterday</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon blue">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <div>
+              <div class="activity-text">3 reels clipped from Tuesday session</div>
+              <div class="activity-time">2 days ago</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Quick actions</span>
+          </div>
+          <div class="quick-actions">
+            <div class="quick-action" onclick="window.location='/index.html'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <div>
+                <div class="quick-action-text">New post</div>
+                <div class="quick-action-sub">Caption + image</div>
+              </div>
+            </div>
+            <div class="quick-action" onclick="window.location='/index.html#clips'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <div>
+                <div class="quick-action-text">Create clips</div>
+                <div class="quick-action-sub">From session video</div>
+              </div>
+            </div>
+            <div class="quick-action" onclick="showPage('reviews', document.querySelector('[onclick*=reviews]'))">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <div>
+                <div class="quick-action-text">Reply reviews</div>
+                <div class="quick-action-sub">2 awaiting reply</div>
+              </div>
+            </div>
+            <div class="quick-action" onclick="alert('Bookings coming soon')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+              <div>
+                <div class="quick-action-text">View bookings</div>
+                <div class="quick-action-sub">Coming soon</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT PAGE -->
+    <div class="page" id="page-content">
+
+
+  <div class="card">
+    <p class="card-label">Your photo</p>
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()">
+      <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)"/>
+      <div class="upload-placeholder" id="upload-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p>Tap to upload your photo</p>
+        <span>A photo of your product, food, space, or work</span>
+      </div>
+      <img id="preview-img" style="display:none"/>
+    </div>
+    <p class="upload-change" id="change-photo" style="display:none" onclick="document.getElementById('photo-input').click()">Tap to change photo</p>
+
+    <div class="section-gap">
+      <p class="card-label" style="margin-bottom:0.75rem">Ad scene</p>
+      <div class="field" style="margin-bottom:10px">
+        <label for="ad-location">Background / location</label>
+        <input type="text" id="ad-location" placeholder="e.g. Edinburgh city centre, coffee shop, gym, beach"/>
+      </div>
+      <div class="field">
+        <label for="ad-style">Shot style</label>
+        <select id="ad-style">
+          <option value="product held in hand, lifestyle">Product held in hand</option>
+          <option value="flat lay product on marble surface">Flat lay on surface</option>
+          <option value="product placed on table in environment">On table in environment</option>
+          <option value="close up macro product shot">Close-up macro shot</option>
+          <option value="person using product in environment">Person using product</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-label">Your business</p>
+    <div class="row">
+      <div class="field">
+        <label for="bname">Business name</label>
+        <input type="text" id="bname" placeholder="e.g. The Copper Kettle"/>
+      </div>
+      <div class="field">
+        <label for="btype">Type of business</label>
+        <select id="btype">
+          <option value="">Select...</option>
+          <option>Café / coffee shop</option>
+          <option>Restaurant</option>
+          <option>Personal trainer</option>
+          <option>Hair / beauty salon</option>
+          <option>Barbershop</option>
+          <option>Tradesperson</option>
+          <option>Retail shop</option>
+          <option>Gym / fitness studio</option>
+          <option>Pub / bar</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="promo">What do you want to promote?</label>
+      <textarea id="promo" placeholder="e.g. Fresh croissants and pastries baked every morning. Available from 7am until sold out."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-label">Content type</p>
+    <div class="type-grid">
+      <button class="type-btn active" data-type="Instagram caption" onclick="setType(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        Instagram
+      </button>
+      <button class="type-btn" data-type="Facebook post" onclick="setType(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        Facebook
+      </button>
+      <button class="type-btn" data-type="Google Business update" onclick="setType(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Google update
+      </button>
+      <button class="type-btn" data-type="TikTok video script" onclick="setType(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/></svg>
+        TikTok script
+      </button>
+      <button class="type-btn" data-type="email newsletter intro" onclick="setType(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Email intro
+      </button>
+      <button class="type-btn" data-type="SMS text message" onclick="setType(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        SMS
+      </button>
+    </div>
+
+    <div class="section-gap">
+      <p class="card-label" style="margin-bottom:0.75rem">Tone</p>
+      <div class="tone-row">
+        <button class="tone-pill active" data-tone="friendly and warm" onclick="setTone(this)">Friendly</button>
+        <button class="tone-pill" data-tone="professional and polished" onclick="setTone(this)">Professional</button>
+        <button class="tone-pill" data-tone="fun and playful" onclick="setTone(this)">Playful</button>
+        <button class="tone-pill" data-tone="urgent and exciting" onclick="setTone(this)">Urgent</button>
+        <button class="tone-pill" data-tone="local and community-focused" onclick="setTone(this)">Local feel</button>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="gbtn" onclick="generate()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Generate caption + ad image
+    </button>
+  </div>
+
+  <div class="error-msg" id="errmsg"></div>
+
+  <div class="output-card" id="outcard">
+    <div class="output-badge">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Ready to post
+    </div>
+    <p class="output-meta" id="outmeta"></p>
+    <div class="output-text" id="outtext"></div>
+    <div class="output-actions">
+      <button class="action-btn" id="copybtn" onclick="copyText()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy caption
+      </button>
+      <button class="action-btn" onclick="generate()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Regenerate
+      </button>
+    </div>
+
+    <div class="image-section" id="image-section" style="display:none">
+      <p class="image-section-label">Your ad image</p>
+      <div id="image-container"></div>
+      <div class="output-actions" style="margin-top:10px" id="image-actions" style="display:none">
+        <button class="action-btn" id="download-btn" onclick="downloadImage()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download image
+        </button>
+        <button class="action-btn" onclick="generateImage()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          New variation
+        </button>
+      </div>
+    </div>
+  </div>
+
+  
+    </div>
+
+    <!-- CLIPS PAGE -->
+    <div class="page" id="page-clips">
+
+
+    <div class="card">
+      <p class="card-label">Upload your video</p>
+      <div class="video-upload-zone" id="video-upload-zone" onclick="document.getElementById('video-input').click()">
+        <input type="file" id="video-input" accept="video/mp4,video/quicktime,video/mov" onchange="handleVideo(event)"/>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <p>Tap to upload a video</p>
+        <span>MP4 or MOV — training session, behind the scenes, demo</span>
+      </div>
+      <div class="video-preview-wrap" id="video-preview-wrap" style="display:none">
+        <video id="video-preview" controls playsinline></video>
+        <p style="font-size:11px;color:var(--hint);margin-top:6px;text-align:center" id="video-duration-label"></p>
+      </div>
+    </div>
+
+    <div class="card" id="clips-card" style="display:none">
+      <p class="card-label">Your clips</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">Set the start and end time for each clip. Each will be exported as a vertical 9:16 reel.</p>
+
+      <div class="clips-list" id="clips-list"></div>
+
+      <button class="add-clip-btn" id="add-clip-btn" onclick="addClip()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add another clip
+      </button>
+
+      <button class="generate-btn" id="render-btn" onclick="renderClips()" style="margin-top:1rem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Render clips
+      </button>
+    </div>
+
+    <div id="clips-output" class="clips-output"></div>
+
+  
+    </div>
+
+    <!-- BOOKINGS PAGE -->
+    <div class="page" id="page-bookings">
+      <div class="card" style="margin-bottom:1rem">
+        <div style="text-align:center;padding:2rem">
+          <span class="coming-soon" style="font-size:12px;padding:4px 12px">Coming soon</span>
+          <p style="font-size:15px;font-weight:600;margin-top:1rem;margin-bottom:6px">Booking management</p>
+          <p style="font-size:13px;color:var(--muted);max-width:360px;margin:0 auto">Clients book directly through your website. Automatic confirmations, reminders, and rebooking — all handled for you.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Preview — today's schedule</span></div>
+        <div class="day-label">Monday 29 June</div>
+        <div class="booking-list">
+          <div class="booking-item">
+            <div class="booking-time">7:00 AM</div>
+            <div class="booking-client">
+              <div class="booking-client-name">Jamie Robertson</div>
+              <div class="booking-client-service">1-on-1 PT · 60 min</div>
+            </div>
+            <span class="booking-status confirmed">Confirmed</span>
+          </div>
+          <div class="booking-item">
+            <div class="booking-time">9:00 AM</div>
+            <div class="booking-client">
+              <div class="booking-client-name">Erin MacDonald</div>
+              <div class="booking-client-service">1-on-1 PT · 60 min</div>
+            </div>
+            <span class="booking-status confirmed">Confirmed</span>
+          </div>
+          <div class="booking-item">
+            <div class="booking-time">12:00 PM</div>
+            <div class="booking-client">
+              <div class="booking-client-name">Tom Gillies</div>
+              <div class="booking-client-service">Assessment · 45 min</div>
+            </div>
+            <span class="booking-status pending">Pending</span>
+          </div>
+          <div class="booking-item">
+            <div class="booking-time">6:00 PM</div>
+            <div class="booking-client">
+              <div class="booking-client-name">Sarah Murray</div>
+              <div class="booking-client-service">1-on-1 PT · 60 min</div>
+            </div>
+            <span class="booking-status cancelled">Cancelled</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS PAGE -->
+    <div class="page" id="page-reviews">
+      <div class="review-item">
+        <div class="review-header">
+          <div>
+            <div class="review-author">Sarah M.</div>
+            <div class="review-date">Google · 2 days ago</div>
+          </div>
+          <span class="coming-soon">Awaiting reply</span>
+        </div>
+        <div class="stars">★★★★★</div>
+        <div class="review-text">Absolutely brilliant PT. I've been training with him for 3 months and the results have been incredible. He really tailors every session to your goals and pushes you in the right way. Couldn't recommend more highly.</div>
+        <div class="review-actions">
+          <button class="topbar-btn primary" style="font-size:12px" onclick="alert('AI reply generation coming — will be live soon')">Generate AI reply</button>
+          <button class="topbar-btn" style="font-size:12px">Dismiss</button>
+        </div>
+      </div>
+      <div class="review-item">
+        <div class="review-header">
+          <div>
+            <div class="review-author">Craig T.</div>
+            <div class="review-date">Google · 4 days ago</div>
+          </div>
+          <span class="coming-soon">Awaiting reply</span>
+        </div>
+        <div class="stars">★★★★☆</div>
+        <div class="review-text">Good sessions, always on time and well prepared. Would be 5 stars if there was an easier way to book online. Looking forward to the new programme launching next month.</div>
+        <div class="review-actions">
+          <button class="topbar-btn primary" style="font-size:12px" onclick="alert('AI reply generation coming — will be live soon')">Generate AI reply</button>
+          <button class="topbar-btn" style="font-size:12px">Dismiss</button>
+        </div>
+      </div>
+      <div class="review-item">
+        <div class="review-header">
+          <div>
+            <div class="review-author">Fiona H.</div>
+            <div class="review-date">Google · 1 week ago</div>
+          </div>
+          <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--success-bg);color:var(--success)">Replied</span>
+        </div>
+        <div class="stars">★★★★★</div>
+        <div class="review-text">Best PT in Edinburgh, no question. Completely changed my approach to training.</div>
+        <div class="review-reply">
+          <div class="review-reply-label">Your reply</div>
+          Thank you so much Fiona — it's been brilliant working with you. Your progress over the last few months has been incredible and it's entirely down to the effort you put in. See you at Thursday's session!
+        </div>
+      </div>
+    </div>
+
+    <!-- EMAILS PAGE -->
+    <div class="page" id="page-emails">
+      <div class="card" style="margin-bottom:1rem">
+        <div style="text-align:center;padding:2rem">
+          <span class="coming-soon" style="font-size:12px;padding:4px 12px">Coming soon</span>
+          <p style="font-size:15px;font-weight:600;margin-top:1rem;margin-bottom:6px">Email sequences</p>
+          <p style="font-size:13px;color:var(--muted);max-width:360px;margin:0 auto">Automated welcome sequences, monthly newsletters, and re-engagement campaigns — all written by AI in your client's voice.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">New client welcome sequence — preview</span></div>
+        <div class="email-sequence">
+          <div class="email-step">
+            <div class="step-line"><div class="step-num">1</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-delay">Immediately</div>
+              <div class="step-subject">Welcome to Iron & Movement 💪</div>
+              <div class="step-preview">Hey [Name], so glad you're here. Here's everything you need to know before your first session...</div>
+              <span class="step-status active">Active</span>
+            </div>
+          </div>
+          <div class="email-step">
+            <div class="step-line"><div class="step-num">2</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-delay">Day 3</div>
+              <div class="step-subject">Your first week nutrition tips</div>
+              <div class="step-preview">Training is only half the story. Here are 3 simple nutrition habits that'll accelerate your results...</div>
+              <span class="step-status active">Active</span>
+            </div>
+          </div>
+          <div class="email-step">
+            <div class="step-line"><div class="step-num">3</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-delay">Day 7</div>
+              <div class="step-subject">How's your first week going?</div>
+              <div class="step-preview">One week in — how are you feeling? I'd love to hear how the sessions are going and if there's anything we should adjust...</div>
+              <span class="step-status draft">Draft</span>
+            </div>
+          </div>
+          <div class="email-step">
+            <div class="step-line"><div class="step-num">4</div><div class="step-connector"></div></div>
+            <div class="step-body">
+              <div class="step-delay">Day 30</div>
+              <div class="step-subject">One month in — your progress review</div>
+              <div class="step-preview">A month flies by. Let's look at where you started vs where you are now...</div>
+              <span class="step-status draft">Draft</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHATSAPP PAGE -->
+    <div class="page" id="page-whatsapp">
+      <div class="card" style="margin-bottom:1rem">
+        <div style="text-align:center;padding:2rem">
+          <span class="coming-soon" style="font-size:12px;padding:4px 12px">Coming soon</span>
+          <p style="font-size:15px;font-weight:600;margin-top:1rem;margin-bottom:6px">WhatsApp & SMS automation</p>
+          <p style="font-size:13px;color:var(--muted);max-width:360px;margin:0 auto">Appointment reminders, promo blasts, and out-of-hours auto-replies. Clients get instant responses 24/7.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Automations — preview</span></div>
+        <div class="wa-automation">
+          <div class="wa-auto-info">
+            <div class="wa-auto-name">Appointment reminder</div>
+            <div class="wa-auto-desc">Sends 24hrs and 1hr before each session</div>
+          </div>
+          <div class="toggle on"></div>
+        </div>
+        <div class="wa-automation">
+          <div class="wa-auto-info">
+            <div class="wa-auto-name">Out of hours auto-reply</div>
+            <div class="wa-auto-desc">AI replies to enquiries outside business hours</div>
+          </div>
+          <div class="toggle on"></div>
+        </div>
+        <div class="wa-automation">
+          <div class="wa-auto-info">
+            <div class="wa-auto-name">Lapsed client re-engagement</div>
+            <div class="wa-auto-desc">Message clients who haven't booked in 4+ weeks</div>
+          </div>
+          <div class="toggle"></div>
+        </div>
+        <div class="wa-automation">
+          <div class="wa-auto-info">
+            <div class="wa-auto-name">Birthday message</div>
+            <div class="wa-auto-desc">Personalised message + offer on client birthdays</div>
+          </div>
+          <div class="toggle"></div>
+        </div>
+        <div class="wa-automation">
+          <div class="wa-auto-info">
+            <div class="wa-auto-name">Weekly promo blast</div>
+            <div class="wa-auto-desc">Send weekly offer to full client list</div>
+          </div>
+          <div class="toggle"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div class="card">
+        <div class="settings-label">Client profile</div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Business name</div></div>
+          <input class="settings-input" value="Iron & Movement PT"/>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Business type</div></div>
+          <input class="settings-input" value="Personal Trainer"/>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Location</div></div>
+          <input class="settings-input" value="Edinburgh, Scotland"/>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Brand tone</div></div>
+          <input class="settings-input" value="Motivational, direct, local"/>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <div class="settings-label">Connected accounts</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Google Business Profile</div>
+            <div class="settings-row-sub">For review management</div>
+          </div>
+          <button class="connect-btn">Connect</button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Instagram</div>
+            <div class="settings-row-sub">For post scheduling</div>
+          </div>
+          <button class="connect-btn">Connect</button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Mailchimp</div>
+            <div class="settings-row-sub">For email sequences</div>
+          </div>
+          <button class="connect-btn">Connect</button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">WhatsApp Business</div>
+            <div class="settings-row-sub">For automated messaging</div>
+          </div>
+          <button class="connect-btn">Connect</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <div class="settings-label">API keys</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Anthropic</div>
+            <div class="settings-row-sub">AI content generation</div>
+          </div>
+          <button class="connect-btn connected">Connected ✓</button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">fal.ai</div>
+            <div class="settings-row-sub">Ad image generation</div>
+          </div>
+          <button class="connect-btn connected">Connected ✓</button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Shotstack</div>
+            <div class="settings-row-sub">Video clip rendering</div>
+          </div>
+          <button class="connect-btn">Connect</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</main>
+
+<script>
+const pageTitles = {
+  overview: 'Dashboard',
+  content: 'Content',
+  clips: 'Clips',
+  bookings: 'Bookings',
+  reviews: 'Reviews',
+  emails: 'Email sequences',
+  whatsapp: 'WhatsApp & SMS',
+  settings: 'Settings'
+};
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('page-title').textContent = pageTitles[id] || id;
+}
+
+// Toggle WhatsApp switches
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', function() {
+    this.classList.toggle('on');
+  });
+});
+
+
+  let ctype = 'Instagram caption';
+  let ctone = 'friendly and warm';
+  let lastText = '';
+  let lastHeadline = '';
+  let photoBase64 = '';
+  let generatedImageUrl = '';
+
+  function setType(el) {
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active'); ctype = el.dataset.type;
+  }
+  function setTone(el) {
+    document.querySelectorAll('.tone-pill').forEach(b => b.classList.remove('active'));
+    el.classList.add('active'); ctone = el.dataset.tone;
+  }
+
+  function handlePhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const zone = document.getElementById('upload-zone');
+      const placeholder = document.getElementById('upload-placeholder');
+      const preview = document.getElementById('preview-img');
+
+      // Resize image to max 1024px before sending to API
+      const img = new Image();
+      img.onload = function() {
+        const maxSize = 1024;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const resized = canvas.toDataURL('image/jpeg', 0.85);
+        photoBase64 = resized.split(',')[1];
+
+        placeholder.style.display = 'none';
+        preview.src = resized;
+        preview.style.display = 'block';
+        zone.classList.add('has-image');
+        document.getElementById('change-photo').style.display = 'block';
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errmsg');
+    el.textContent = msg; el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 6000);
+  }
+
+  // TAB SWITCHING
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // VIDEO CLIPS
+  let videoDuration = 0;
+  let videoBase64 = '';
+  let videoFileName = '';
+  let clipCount = 0;
+  let renderIdsStore = [];
+
+  function handleVideo(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    videoFileName = file.name;
+    const url = URL.createObjectURL(file);
+    const video = document.getElementById('video-preview');
+    video.src = url;
+    document.getElementById('video-preview-wrap').style.display = 'block';
+    video.onloadedmetadata = function() {
+      videoDuration = video.duration;
+      const mins = Math.floor(videoDuration / 60);
+      const secs = Math.floor(videoDuration % 60);
+      document.getElementById('video-duration-label').textContent = `Duration: ${mins}:${secs.toString().padStart(2,'0')}`;
+      document.getElementById('clips-card').style.display = 'block';
+      if (document.getElementById('clips-list').children.length === 0) addClip();
+    };
+    // Read as base64 for upload
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      videoBase64 = ev.target.result.split(',')[1];
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function formatTime(secs) {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return m + ':' + s.toString().padStart(2,'0');
+  }
+
+  function parseTime(str) {
+    const parts = str.split(':');
+    if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+    return parseFloat(str);
+  }
+
+  function addClip() {
+    if (clipCount >= 5) return;
+    clipCount++;
+    const list = document.getElementById('clips-list');
+    const defaultStart = 0;
+    const defaultEnd = Math.min(30, videoDuration);
+    const div = document.createElement('div');
+    div.className = 'clip-item';
+    div.id = 'clip-' + clipCount;
+    div.innerHTML = `
+      <div class="clip-item-header">
+        <span class="clip-label">Clip ${clipCount}</span>
+        <button class="clip-remove" onclick="removeClip(${clipCount})" title="Remove clip">×</button>
+      </div>
+      <div class="clip-times">
+        <div class="clip-time-field">
+          <label>Start time (m:ss)</label>
+          <input type="text" id="start-${clipCount}" value="${formatTime(defaultStart)}" placeholder="0:00"/>
+        </div>
+        <div class="clip-time-field">
+          <label>End time (m:ss)</label>
+          <input type="text" id="end-${clipCount}" value="${formatTime(defaultEnd)}" placeholder="0:30"/>
+        </div>
+      </div>
+      <button class="clip-preview-btn" onclick="previewClip(${clipCount})">▶ Preview this section</button>
+    `;
+    list.appendChild(div);
+    if (clipCount >= 5) document.getElementById('add-clip-btn').style.display = 'none';
+  }
+
+  function removeClip(id) {
+    const el = document.getElementById('clip-' + id);
+    if (el) el.remove();
+    document.getElementById('add-clip-btn').style.display = 'flex';
+  }
+
+  function previewClip(id) {
+    const start = parseTime(document.getElementById('start-' + id).value);
+    const video = document.getElementById('video-preview');
+    video.currentTime = start;
+    video.play();
+  }
+
+  async function renderClips() {
+    if (!videoBase64) { showError('Please upload a video first.'); return; }
+
+    const clipItems = document.querySelectorAll('.clip-item');
+    const clips = [];
+    for (const item of clipItems) {
+      const id = item.id.split('-')[1];
+      const start = parseTime(document.getElementById('start-' + id).value);
+      const end = parseTime(document.getElementById('end-' + id).value);
+      if (end <= start) { showError('End time must be after start time for all clips.'); return; }
+      if (end - start < 1) { showError('Clips must be at least 1 second long.'); return; }
+      clips.push({ start, end, label: 'Clip ' + id });
+    }
+
+    if (!clips.length) { showError('Add at least one clip first.'); return; }
+
+    const btn = document.getElementById('render-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Uploading video...';
+
+    const output = document.getElementById('clips-output');
+    output.innerHTML = '<div class="card"><p style="font-size:13px;color:var(--muted)">Uploading your video...</p></div>';
+
+    try {
+      // Step 1: Upload video
+      const uploadRes = await fetch('/api/upload-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoBase64, fileName: videoFileName })
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || uploadData.error) {
+        output.innerHTML = `<div class="card"><p style="color:#c0392b;font-size:13px">Upload failed — ${uploadData.error}</p></div>`;
+        return;
+      }
+
+      btn.innerHTML = '<div class="spinner"></div> Creating clips...';
+      output.innerHTML = '<div class="card"><p style="font-size:13px;color:var(--muted)">Rendering your clips — this takes about 1-2 minutes...</p></div>';
+
+      // Step 2: Create clip renders
+      const createRes = await fetch('/api/create-clips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl: uploadData.videoUrl, clips })
+      });
+      const createData = await createRes.json();
+      if (!createRes.ok || createData.error) {
+        output.innerHTML = `<div class="card"><p style="color:#c0392b;font-size:13px">Render failed — ${createData.error}</p></div>`;
+        return;
+      }
+
+      renderIdsStore = createData.renderIds;
+
+      // Step 3: Poll for results
+      output.innerHTML = `<div class="card"><p style="font-size:13px;color:var(--muted)">Rendering ${clips.length} clip${clips.length > 1 ? 's' : ''}...<br><span style="font-size:11px;color:var(--hint)">Usually takes 1-2 minutes</span></p></div>`;
+
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 4000));
+        const pollRes = await fetch('/api/poll-clips', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ renderIds: renderIdsStore })
+        });
+        const pollData = await pollRes.json();
+
+        // Update UI with current status
+        let html = '';
+        for (const result of pollData.results) {
+          if (result.status === 'done' && result.url) {
+            html += `<div class="clip-result">
+              <div>
+                <p class="clip-result-label">${result.label}</p>
+                <p class="clip-result-status done">Ready</p>
+              </div>
+              <a class="action-btn" href="${result.url}" download target="_blank">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download
+              </a>
+            </div>`;
+          } else if (result.status === 'failed') {
+            html += `<div class="clip-result"><div><p class="clip-result-label">${result.label}</p><p class="clip-result-status failed">Failed</p></div></div>`;
+          } else {
+            html += `<div class="clip-result"><div><p class="clip-result-label">${result.label}</p><p class="clip-result-status">Rendering...</p></div></div>`;
+          }
+        }
+        output.innerHTML = `<div class="card"><p class="card-label" style="margin-bottom:1rem">Your clips</p>${html}</div>`;
+
+        if (pollData.allDone) break;
+      }
+
+    } catch(e) {
+      output.innerHTML = `<div class="card"><p style="color:#c0392b;font-size:13px">Error: ${e.message}</p></div>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Render clips';
+    }
+  }
+
+  function copyText() {
+    navigator.clipboard.writeText(lastText).then(() => {
+      const btn = document.getElementById('copybtn');
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+      setTimeout(() => { btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy caption`; }, 2000);
+    });
+  }
+
+  function getHeadline(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const first = lines[0].replace(/[#*_~`]/g, '').trim();
+    return first.length > 70 ? first.substring(0, 67) + '...' : first;
+  }
+
+  async function generateImage() {
+    if (!photoBase64) return;
+    const name = document.getElementById('bname').value.trim();
+    const type = document.getElementById('btype').value;
+
+    const imageSection = document.getElementById('image-section');
+    const imageContainer = document.getElementById('image-container');
+    imageSection.style.display = 'block';
+    document.getElementById('image-actions').style.display = 'none';
+
+    imageContainer.innerHTML = `
+      <div class="generating-placeholder">
+        <div class="spinner-dark"></div>
+        <p>Creating your ad image...</p>
+        <span>This takes about 30-60 seconds</span>
+      </div>`;
+
+    try {
+      const submitRes = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: photoBase64,
+          businessName: name,
+          businessType: type,
+          promotion: document.getElementById('promo').value.trim(),
+          adStyle: document.getElementById('ad-style').value,
+          adLocation: document.getElementById('ad-location').value.trim() || 'Edinburgh city centre'
+        })
+      });
+      const submitData = await submitRes.json();
+
+      if (!submitRes.ok || submitData.error) {
+        imageContainer.innerHTML = `<p style="font-size:13px;color:#c0392b;padding:12px">Image generation failed - ${submitData.error || 'please try again'}</p>`;
+        return;
+      }
+
+      if (submitData.imageUrl) {
+        generatedImageUrl = submitData.imageUrl;
+        imageContainer.innerHTML = `<img class="ad-image" src="${submitData.imageUrl}" alt="Generated ad image"/>`;
+        document.getElementById('image-actions').style.display = 'flex';
+        return;
+      }
+
+      const { statusUrl, responseUrl } = submitData;
+      if (!statusUrl) {
+        imageContainer.innerHTML = `<p style="font-size:13px;color:#c0392b;padding:12px">No status URL - please try again</p>`;
+        return;
+      }
+
+      const messages = ['Creating your ad image...', 'Applying editorial style...', 'Fine-tuning the lighting...', 'Almost there...'];
+      let msgIdx = 0;
+
+      for (let i = 0; i < 40; i++) {
+        await new Promise(r => setTimeout(r, 5000));
+        if (i % 4 === 0 && msgIdx < messages.length - 1) msgIdx++;
+        imageContainer.innerHTML = `
+          <div class="generating-placeholder">
+            <div class="spinner-dark"></div>
+            <p>${messages[msgIdx]}</p>
+            <span>${Math.round((i + 1) * 5)} seconds elapsed</span>
+          </div>`;
+
+        const pollRes = await fetch('/api/poll-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ statusUrl, responseUrl })
+        });
+        const pollData = await pollRes.json();
+
+        if (pollData.status === 'done' && pollData.imageUrl) {
+          generatedImageUrl = pollData.imageUrl;
+          imageContainer.innerHTML = `<img class="ad-image" src="${pollData.imageUrl}" alt="Generated ad image"/>`;
+          document.getElementById('image-actions').style.display = 'flex';
+          return;
+        }
+        if (pollData.status === 'failed') {
+          imageContainer.innerHTML = `<p style="font-size:13px;color:#c0392b;padding:12px">Generation failed - ${pollData.error || 'please try again'}</p>`;
+          return;
+        }
+      }
+      imageContainer.innerHTML = `<p style="font-size:13px;color:#c0392b;padding:12px">Timed out - please try again</p>`;
+
+    } catch(e) {
+      imageContainer.innerHTML = `<p style="font-size:13px;color:#c0392b;padding:12px">Connection error - please try again</p>`;
+    }
+  }
+  async function downloadImage() {
+    if (!generatedImageUrl) return;
+    const name = document.getElementById('bname').value.trim().replace(/\s+/g, '-').toLowerCase() || 'post';
+    try {
+      const res = await fetch(generatedImageUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${name}-ad.png`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch(e) {
+      // Fallback — open in new tab
+      window.open(generatedImageUrl, '_blank');
+    }
+  }
+
+  async function generate() {
+    const name = document.getElementById('bname').value.trim();
+    const type = document.getElementById('btype').value;
+    const promo = document.getElementById('promo').value.trim();
+    if (!name || !type || !promo) { showError('Please fill in your business name, type, and what you want to promote.'); return; }
+    if (!photoBase64) { showError('Please upload a photo first — the AI uses it to create your ad image.'); return; }
+
+    const btn = document.getElementById('gbtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Writing...';
+    document.getElementById('outcard').classList.remove('visible');
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessName: name, businessType: type, promotion: promo, contentType: ctype, tone: ctone })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) { showError(data.error || 'Something went wrong. Please try again.'); return; }
+
+      lastText = data.content;
+      lastHeadline = getHeadline(data.content);
+      document.getElementById('outtext').textContent = data.content;
+      document.getElementById('outmeta').textContent = `${ctype} — ${ctone} tone`;
+      document.getElementById('outcard').classList.add('visible');
+
+      // Auto-kick off image generation
+      generateImage();
+
+    } catch(e) {
+      showError('Connection error. Please check your internet and try again.');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate caption + ad image`;
+    }
+  }
+
+</script>
+</body>
+</html>
